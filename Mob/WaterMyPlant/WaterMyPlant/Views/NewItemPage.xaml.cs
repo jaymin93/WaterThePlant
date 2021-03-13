@@ -10,7 +10,7 @@ namespace WaterMyPlant.Views
 {
     public partial class NewItemPage : ContentPage
     {
-        public Item Item { get; set; }
+        public PlantWateringDeatails Item { get; set; }
 
         public NewItemPage()
         {

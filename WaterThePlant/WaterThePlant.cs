@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using System.Collections.Generic;
 
 namespace WaterThePlant
 {
@@ -41,6 +42,8 @@ namespace WaterThePlant
                     {
                         await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Started Motor to Plant water due to current moisture level is {moisturelevel}");
 
+                       // var data = await GetPlantWateringDeatailsAsync();
+
                         return new OkObjectResult(StartMotor);
                     }
                     else if (moisturelevel >= UpperBoundmoisturelevel)
@@ -68,28 +71,72 @@ namespace WaterThePlant
 
         public static async Task<bool> InsertWateringDeatilsTOAzureTable(int moisturelevel, string message)
         {
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
+            try
+            {
+                CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
 
-            CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
 
-            CloudTable table = tableClient.GetTableReference("PlantWateringDeatails");
+                CloudTable table = tableClient.GetTableReference("PlantWateringDeatails");
 
-            await table.CreateIfNotExistsAsync();
+                await table.CreateIfNotExistsAsync();
 
-            PlantWateringDeatails details = new PlantWateringDeatails(waterdetails, waterdetails+moisturelevel);
+                PlantWateringDeatails details = new PlantWateringDeatails(waterdetails, $"myplant{waterdetails}{moisturelevel}");
 
-            details.DateTime = DateTime.Now;
-            details.Message = message;
-            details.MoisuteLevel = moisturelevel;
+                details.PlantingeTime = DateTime.Now;
+                details.Message = message;
+                details.MoisuteLevel = moisturelevel;
 
-            TableOperation insertOperation = TableOperation.Insert(details);
+                TableOperation insertOperation = TableOperation.Insert(details);
 
-            var insertoperationresult = await table.ExecuteAsync(insertOperation);
+                var insertoperationresult = await table.ExecuteAsync(insertOperation);
 
-            var sts = insertoperationresult.HttpStatusCode;
+                var sts = insertoperationresult.HttpStatusCode;
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                var x = ex;
+                throw;
+            }
+            
         }
+
+
+
+
+        public static async Task<List<PlantWateringDeatails>> GetPlantWateringDeatailsAsync()
+        {
+            try
+            {
+                CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
+
+                CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+
+                CloudTable table = tableClient.GetTableReference("PlantWateringDeatails");
+
+                var gettabledataoperation = TableOperation.Retrieve("waterdetails", "myplantwaterdetails");
+
+                TableResult result = await table.ExecuteAsync(gettabledataoperation).ConfigureAwait(false);
+
+                return JsonConvert.DeserializeObject<List<PlantWateringDeatails>>(result.Result.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                var x = ex;
+                throw;
+            }
+
+            //var insertoperationresult = await table.ExecuteAsync(insertOperation);
+
+            //var sts = insertoperationresult.HttpStatusCode;
+
+            //return true;
+
+        }
+
     }
 
 
@@ -101,7 +148,7 @@ namespace WaterThePlant
             this.PartitionKey = skey;
             this.RowKey = srow;
         }
-        public DateTime DateTime { get; set; }
+        public DateTime PlantingeTime { get; set; }
         public int MoisuteLevel { get; set; }
         public string Message { get; set; }
 

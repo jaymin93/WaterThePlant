@@ -10,7 +10,7 @@ namespace WaterMyPlant.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {
-        public IDataStore<Item> DataStore => DependencyService.Get<IDataStore<Item>>();
+        public IDataStore<PlantWateringDeatails> DataStore => DependencyService.Get<IDataStore<PlantWateringDeatails>>();
 
         bool isBusy = false;
         public bool IsBusy

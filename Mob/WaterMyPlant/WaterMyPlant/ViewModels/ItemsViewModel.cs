@@ -10,20 +10,20 @@ namespace WaterMyPlant.ViewModels
 {
     public class ItemsViewModel : BaseViewModel
     {
-        private Item _selectedItem;
+        private PlantWateringDeatails _selectedItem;
 
-        public ObservableCollection<Item> Items { get; }
+        public ObservableCollection<PlantWateringDeatails> Items { get; }
         public Command LoadItemsCommand { get; }
         public Command AddItemCommand { get; }
-        public Command<Item> ItemTapped { get; }
+        public Command<PlantWateringDeatails> ItemTapped { get; }
 
         public ItemsViewModel()
         {
             Title = "Browse";
-            Items = new ObservableCollection<Item>();
+            Items = new ObservableCollection<PlantWateringDeatails>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
-            ItemTapped = new Command<Item>(OnItemSelected);
+            ItemTapped = new Command<PlantWateringDeatails>(OnItemSelected);
 
             AddItemCommand = new Command(OnAddItem);
         }
@@ -57,7 +57,7 @@ namespace WaterMyPlant.ViewModels
             SelectedItem = null;
         }
 
-        public Item SelectedItem
+        public PlantWateringDeatails SelectedItem
         {
             get => _selectedItem;
             set
@@ -72,13 +72,13 @@ namespace WaterMyPlant.ViewModels
             await Shell.Current.GoToAsync(nameof(NewItemPage));
         }
 
-        async void OnItemSelected(Item item)
+        async void OnItemSelected(PlantWateringDeatails item)
         {
             if (item == null)
                 return;
 
             // This will push the ItemDetailPage onto the navigation stack
-            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.ItemId)}={item.Id}");
+            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.MoisuteLevel)}={item.MoisuteLevel}");
         }
     }
 }

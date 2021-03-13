@@ -6,47 +6,47 @@ using Xamarin.Forms;
 
 namespace WaterMyPlant.ViewModels
 {
-    [QueryProperty(nameof(ItemId), nameof(ItemId))]
+    [QueryProperty(nameof(MoisuteLevel), nameof(MoisuteLevel))]
     public class ItemDetailViewModel : BaseViewModel
     {
-        private string itemId;
-        private string text;
-        private string description;
-        public string Id { get; set; }
+        private int moisuteLevel;
+        private DateTime plantingeTime;
+        private string message;
+        
 
-        public string Text
+        public DateTime PlantingeTimeText
         {
-            get => text;
-            set => SetProperty(ref text, value);
+            get => plantingeTime;
+            set => SetProperty(ref plantingeTime, value);
         }
 
-        public string Description
+        public string Message
         {
-            get => description;
-            set => SetProperty(ref description, value);
+            get => message;
+            set => SetProperty(ref message, value);
         }
 
-        public string ItemId
+        public int MoisuteLevel
         {
             get
             {
-                return itemId;
+                return moisuteLevel;
             }
             set
             {
-                itemId = value;
+                moisuteLevel = value;
                 LoadItemId(value);
             }
         }
 
-        public async void LoadItemId(string itemId)
+        public async void LoadItemId(int itemId)
         {
             try
             {
                 var item = await DataStore.GetItemAsync(itemId);
-                Id = item.Id;
-                Text = item.Text;
-                Description = item.Description;
+                moisuteLevel = item.MoisuteLevel;
+                plantingeTime = item.PlantingeTime;
+                message = item.Message;
             }
             catch (Exception)
             {
