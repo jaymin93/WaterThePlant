@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace WaterThePlant
 {
@@ -28,27 +29,30 @@ namespace WaterThePlant
 
         [FunctionName("WaterThePlant")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
 
             int moisturelevel;
 
-            if (!string.IsNullOrEmpty(req.Query["moisturelevel"]))
+            string content = await new StreamReader(req.Body).ReadToEndAsync();
+
+            PostRequestData postdata = JsonConvert.DeserializeObject<PostRequestData>(content);
+
+
+            if (!string.IsNullOrEmpty(postdata.moisturelevel))
             {
-                if (int.TryParse(req.Query["moisturelevel"], out moisturelevel))
+                if (int.TryParse(postdata.moisturelevel, out moisturelevel))
                 {
                     if (moisturelevel <= LowerBoundmoisturelevel)
                     {
-                        await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Started Motor to Plant water due to current moisture level is {moisturelevel}");
-
-                       // var data = await GetPlantWateringDeatailsAsync();
+                        await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Started Motor to Plant water due to current moisture level is {moisturelevel}",log);
 
                         return new OkObjectResult(StartMotor);
                     }
                     else if (moisturelevel >= UpperBoundmoisturelevel)
                     {
-                        await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Stopped Motor to Plant water due to current moisture level is {moisturelevel}");
+                        await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Stopped Motor to Plant water due to current moisture level is {moisturelevel}",log);
 
                         return new OkObjectResult(StopMotor);
                     }
@@ -69,7 +73,7 @@ namespace WaterThePlant
         }
 
 
-        public static async Task<bool> InsertWateringDeatilsTOAzureTable(int moisturelevel, string message)
+        public static async Task<bool> InsertWateringDeatilsTOAzureTable(int moisturelevel, string message,ILogger log)
         {
             try
             {
@@ -79,7 +83,8 @@ namespace WaterThePlant
 
                 CloudTable table = tableClient.GetTableReference("PlantWateringDeatails");
 
-                await table.CreateIfNotExistsAsync();
+                //can be used in situation if you are not sure table exist , in my i created table so i do not need to check this
+                //await table.CreateIfNotExistsAsync();
 
                 PlantWateringDeatails details = new PlantWateringDeatails(waterdetails, $"myplant{waterdetails}{moisturelevel}");
 
@@ -97,52 +102,16 @@ namespace WaterThePlant
             }
             catch (Exception ex)
             {
-                var x = ex;
-                throw;
+                log.LogError(ex.ToString());
+                return  default;
             }
             
         }
-
-
-
-
-        public static async Task<List<PlantWateringDeatails>> GetPlantWateringDeatailsAsync()
-        {
-            try
-            {
-                CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
-
-                CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-
-                CloudTable table = tableClient.GetTableReference("PlantWateringDeatails");
-
-                var gettabledataoperation = TableOperation.Retrieve("waterdetails", "myplantwaterdetails");
-
-                TableResult result = await table.ExecuteAsync(gettabledataoperation).ConfigureAwait(false);
-
-                return JsonConvert.DeserializeObject<List<PlantWateringDeatails>>(result.Result.ToString());
-
-            }
-            catch (Exception ex)
-            {
-                var x = ex;
-                throw;
-            }
-
-            //var insertoperationresult = await table.ExecuteAsync(insertOperation);
-
-            //var sts = insertoperationresult.HttpStatusCode;
-
-            //return true;
-
-        }
-
     }
 
 
     public class PlantWateringDeatails : TableEntity
     {
-
         public PlantWateringDeatails(string skey, string srow)
         {
             this.PartitionKey = skey;
@@ -153,4 +122,12 @@ namespace WaterThePlant
         public string Message { get; set; }
 
     }
+
+
+    public class PostRequestData
+    {
+        public string moisturelevel { get; set; }
+    }
+
+   
 }

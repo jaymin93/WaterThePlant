@@ -12,11 +12,18 @@ namespace WaterMyPlant.Services
 {
     public class MockDataStore : IDataStore<PlantWateringDeatails>
     {
-        readonly List<PlantWateringDeatails> items;
+        List<PlantWateringDeatails> items;
 
+
+        Task loaddata;
         public MockDataStore()
         {
-            items = GetPlantWateringDeatailsAsync().Result;
+            GetDataFromAzureTable();
+        }
+
+        public async void GetDataFromAzureTable()
+        {
+            items = await GetPlantWateringDeatailsAsync().ConfigureAwait(false);
         }
 
         //public async Task<bool> AddItemAsync(PlantWateringDeatails item)
@@ -57,46 +64,6 @@ namespace WaterMyPlant.Services
         {
             try
             {
-                //    CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
-
-                //    CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-
-                //    CloudTable table = tableClient.GetTableReference("PlantWateringDeatails");
-
-                //    var gettabledataoperation = TableOperation.Retrieve("waterdetails", "myplantwaterdetails");
-
-                //    TableResult result = await table.ExecuteAsync(gettabledataoperation).ConfigureAwait(false);
-
-
-                //    List<PlantWateringDeatails> detailslist = new List<PlantWateringDeatails>();
-
-                //    TableContinuationToken token = null;
-                //    do
-                //    {
-
-
-                //        foreach (var entity in result.Results)
-                //        {
-                //            LinkSummary _summary = new LinkSummary
-                //            {
-                //                Raw_URL = entity.Raw_URL,
-                //                Short_Code = entity.Short_Code
-                //            };
-
-                //            _records.Add(_summary);
-                //        }
-                //    } while (token != null);
-
-                //}
-                //catch (Exception ex)
-                //{
-                //    var x = ex;
-                //    throw;
-                //}
-
-
-
-
                 List<PlantWateringDeatails> _records = new List<PlantWateringDeatails>();
 
                 CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
@@ -106,11 +73,9 @@ namespace WaterMyPlant.Services
                 CloudTable _linkTable = tableClient.GetTableReference("PlantWateringDeatails");
 
 
-
-                // Construct the query operation for all customer entities where PartitionKey="Smith".
                 TableQuery<PlantWateringDeatails> query = new TableQuery<PlantWateringDeatails>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "waterdetails"));
 
-                // Print the fields for each customer.
+
                 TableContinuationToken token = null;
                 do
                 {
