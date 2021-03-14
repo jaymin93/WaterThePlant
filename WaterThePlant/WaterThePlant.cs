@@ -20,7 +20,7 @@ namespace WaterThePlant
 
         public const string StopMotor = "StopMotor";
 
-        public const string IdleMotor = "idleMotor";
+        public const string IdleMotor = "IdleMotor";
 
         public const string waterdetails = "waterdetails";
         public static int UpperBoundmoisturelevel { get; set; } = 80;
