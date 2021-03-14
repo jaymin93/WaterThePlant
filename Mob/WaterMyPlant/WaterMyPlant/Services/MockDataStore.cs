@@ -15,6 +15,9 @@ namespace WaterMyPlant.Services
         List<PlantWateringDeatails> items;
 
 
+        public const string PlantWateringDeatails = "PlantWateringDeatails";
+
+
         Task loaddata;
         public MockDataStore()
         {
@@ -64,13 +67,13 @@ namespace WaterMyPlant.Services
         {
             try
             {
-                List<PlantWateringDeatails> _records = new List<PlantWateringDeatails>();
+                List<PlantWateringDeatails> PlantWateringDeatailsrecords = new List<PlantWateringDeatails>();
 
                 CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=watertheplant20210313151;AccountKey=TPcEaU2J7xk+0xy9k8/ZRgCCaSqgzOq4Uhje1KfXvcdiUALLvB0eue3GlYRsWegDmFk9NyJeH5XeSP9c3iqkrw==;EndpointSuffix=core.windows.net");
 
                 CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
 
-                CloudTable _linkTable = tableClient.GetTableReference("PlantWateringDeatails");
+                CloudTable _linkTable = tableClient.GetTableReference(PlantWateringDeatails);
 
 
                 TableQuery<PlantWateringDeatails> query = new TableQuery<PlantWateringDeatails>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "waterdetails"));
@@ -92,12 +95,12 @@ namespace WaterMyPlant.Services
 
                         };
 
-                        _records.Add(_summary);
+                        PlantWateringDeatailsrecords.Add(_summary);
                     }
                 } while (token != null);
 
 
-                return _records;
+                return PlantWateringDeatailsrecords;
 
 
 
