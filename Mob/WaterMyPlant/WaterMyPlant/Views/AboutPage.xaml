@@ -38,13 +38,13 @@
                 <Switch   IsToggled="true" />
                 <StackLayout IsVisible="true" Orientation="Horizontal">
 
-                    <Button Text="Start Motor" x:Name="btnsave" 
-                        Command="{Binding OpenWebCommand}"
+                    <Button Text="StartMotor" x:Name="btnsave" 
+                        Command="{Binding StartMotorCommand}"
                         BackgroundColor="{StaticResource Accent}"
                         TextColor="White"  HorizontalOptions="FillAndExpand"></Button>
 
-                    <Button Text="Clear" x:Name="Stop Motor" 
-                        Command="{Binding CleaeTextCommand}"
+                    <Button Text="StopMotor" x:Name="StopMotor" 
+                        Command="{Binding StopMotorCommand}"
                         BackgroundColor="{StaticResource Accent}" 
                         TextColor="White"  HorizontalOptions="FillAndExpand"></Button>
 

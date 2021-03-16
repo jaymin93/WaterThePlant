@@ -22,6 +22,7 @@ namespace WaterMyPlant.Services
         public MockDataStore()
         {
             GetDataFromAzureTable();
+
         }
 
         public async void GetDataFromAzureTable()
