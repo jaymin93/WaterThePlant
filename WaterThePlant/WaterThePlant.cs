@@ -27,9 +27,13 @@ namespace WaterThePlant
 
         public static int LowerBoundmoisturelevel { get; set; } = 20;
 
-        public static bool AutoMode { get; set; }
+        public static bool AutoMode;
 
-        public const string seprator = "##"; 
+        public const string seprator = "##";
+
+        public static string CurrentMotorState { get; set; }
+
+        public static int currentMoisturelevel { get; set; }
 
         [FunctionName("WaterThePlant")]
         public static async Task<IActionResult> Run(
@@ -43,8 +47,12 @@ namespace WaterThePlant
 
             PostRequestData postdata = JsonConvert.DeserializeObject<PostRequestData>(content);
 
+            if (!bool.TryParse(postdata.automode.ToString(), out AutoMode))
+            {
+                log.LogError($"Invalid argument for Automode {postdata.automode}");
+            }
 
-            AutoMode = postdata.automode;
+
 
             if (AutoMode)
             {
@@ -52,21 +60,30 @@ namespace WaterThePlant
                 {
                     if (int.TryParse(postdata.moisturelevel, out moisturelevel))
                     {
+                        currentMoisturelevel = moisturelevel;
+
                         if (moisturelevel <= LowerBoundmoisturelevel)
                         {
                             await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Started Motor to Plant water due to current moisture level is {moisturelevel}", log);
 
-                            return new OkObjectResult($"{StartMotor}{seprator}{AutoMode}");
+                            CurrentMotorState = StartMotor;
+
+                            return new OkObjectResult($"{StartMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
                         }
                         else if (moisturelevel >= UpperBoundmoisturelevel)
                         {
                             await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Stopped Motor to Plant water due to current moisture level is {moisturelevel}", log);
 
-                            return new OkObjectResult($"{StopMotor}{seprator}{AutoMode}");
+                            CurrentMotorState = StopMotor;
+
+
+                            return new OkObjectResult($"{StopMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
                         }
                         else
                         {
-                            return new OkObjectResult($"{IdleMotor}{seprator}{AutoMode}");
+                            CurrentMotorState = IdleMotor;
+
+                            return new OkObjectResult($"{IdleMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
                         }
                     }
                     else
@@ -79,24 +96,37 @@ namespace WaterThePlant
                     return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
                 }
             }
-            else
+            else if (AutoMode == false)
             {
                 if (!string.IsNullOrEmpty(postdata.motorstate))
                 {
+                    if (!int.TryParse(postdata.moisturelevel, out moisturelevel))
+                    {
+                        log.LogError($"unable to parse moisturelevel{postdata.moisturelevel}");
+                    }
+
+                    currentMoisturelevel = moisturelevel;
+
                     switch (postdata.motorstate)
                     {
                         case StartMotor:
-                            return new OkObjectResult($"{StartMotor}{seprator}{AutoMode}");
+                            CurrentMotorState = StartMotor;
+
+                            return new OkObjectResult($"{StartMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
 
                         case StopMotor:
-                            return new OkObjectResult($"{StopMotor}{seprator}{AutoMode}");
+                            CurrentMotorState = StopMotor;
+
+                            return new OkObjectResult($"{StopMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
 
                         case IdleMotor:
-                            return new OkObjectResult($"{IdleMotor}{seprator}{AutoMode}");
+                            CurrentMotorState = IdleMotor;
+
+                            return new OkObjectResult($"{IdleMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
 
                         default:
                             return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
-                           
+
                     }
 
                 }
@@ -105,11 +135,14 @@ namespace WaterThePlant
                     return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
                 }
             }
-            
+            else
+            {
+                return new OkObjectResult($"{CurrentMotorState}{seprator}{AutoMode}");
+            }
         }
 
 
-        public static async Task<bool> InsertWateringDeatilsTOAzureTable(int moisturelevel, string message,ILogger log)
+        public static async Task<bool> InsertWateringDeatilsTOAzureTable(int moisturelevel, string message, ILogger log)
         {
             try
             {
@@ -139,9 +172,9 @@ namespace WaterThePlant
             catch (Exception ex)
             {
                 log.LogError(ex.ToString());
-                return  default;
+                return default;
             }
-            
+
         }
     }
 
@@ -162,11 +195,11 @@ namespace WaterThePlant
 
     public class PostRequestData
     {
-        public string moisturelevel { get; set; }
+        public string? moisturelevel { get; set; }
 
-        public bool automode { get; set; }
+        public bool? automode { get; set; }
 
-        public string motorstate { get; set; }
+        public string? motorstate { get; set; }
     }
 
 }

@@ -26,7 +26,7 @@
                
                     <Label Text="Watering Status" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
 
-                <Label Text="IDLE Motor" HorizontalOptions="FillAndExpand"  VerticalOptions="FillAndExpand" FontAttributes="Bold"  ></Label>
+                <Label Text="{Binding CurrentMotorState}" HorizontalOptions="FillAndExpand"  VerticalOptions="FillAndExpand" FontAttributes="Bold"  ></Label>
 
                
             </StackLayout>
@@ -35,7 +35,7 @@
             <StackLayout Orientation="Vertical" Padding="10" Spacing="10">
 
                 <Label Text="Auto Watering Mode" HorizontalOptions="FillAndExpand"></Label>
-                <Switch   IsToggled="true" />
+                <Switch   IsToggled="{Binding Automodeenabled}" />
                 <StackLayout IsVisible="true" Orientation="Horizontal">
 
                     <Button Text="StartMotor" x:Name="btnsave" 
