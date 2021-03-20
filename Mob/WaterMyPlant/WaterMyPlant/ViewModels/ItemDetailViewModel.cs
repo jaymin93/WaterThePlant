@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using WaterMyPlant.Models;
 using Xamarin.Forms;
@@ -12,7 +16,7 @@ namespace WaterMyPlant.ViewModels
         private int moisuteLevel;
         private DateTime plantingeTime;
         private string message;
-        
+
 
         public DateTime PlantingeTimeText
         {
@@ -53,5 +57,8 @@ namespace WaterMyPlant.ViewModels
                 Debug.WriteLine("Failed to Load Item");
             }
         }
+
+
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,17 +19,17 @@ namespace WaterMyPlant.Services
         public const string PlantWateringDeatails = "PlantWateringDeatails";
 
 
-        Task loaddata;
+
+
         public MockDataStore()
         {
-            GetDataFromAzureTable();
-
+            var datafromapi = Task.Run(async () => await GetHistoryAsync().ConfigureAwait(false));
         }
 
-        public async void GetDataFromAzureTable()
-        {
-            items = await GetPlantWateringDeatailsAsync().ConfigureAwait(false);
-        }
+        //public async void GetDataFromAzureTable()
+        //{
+        //    items = await GetPlantWateringDeatailsAsync().ConfigureAwait(false);
+        //}
 
         //public async Task<bool> AddItemAsync(PlantWateringDeatails item)
         //{
@@ -64,7 +65,7 @@ namespace WaterMyPlant.Services
             return await Task.FromResult(items);
         }
 
-        public static async Task<List<PlantWateringDeatails>> GetPlantWateringDeatailsAsync()
+        public async Task<List<PlantWateringDeatails>> GetPlantWateringDeatailsAsync()
         {
             try
             {
@@ -77,7 +78,7 @@ namespace WaterMyPlant.Services
                 CloudTable _linkTable = tableClient.GetTableReference(PlantWateringDeatails);
 
 
-                TableQuery<PlantWateringDeatails> query = new TableQuery<PlantWateringDeatails>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "waterdetails"));
+                TableQuery<PlantWateringDeatails> query = new TableQuery<PlantWateringDeatails>().Take(10).Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "waterdetails"));
 
 
                 TableContinuationToken token = null;
@@ -100,17 +101,39 @@ namespace WaterMyPlant.Services
                     }
                 } while (token != null);
 
-
                 return PlantWateringDeatailsrecords;
-
-
-
             }
             catch (Exception exp)
             {
                 return null;
             }
         }
-    }
 
+
+        private async Task<List<PlantWateringDeatails>> GetHistoryAsync()
+        {
+            try
+            {
+                var client = new RestClient("https://watertheplant20210313151300.azurewebsites.net/api/WaterThePlant");
+                client.Timeout = -1;
+                var request = new RestRequest(Method.POST);
+                request.AddHeader("x-functions-key", "7p3M8YQCp1KyyaGiWDPO9TtrjQQrabuC7ZIvXiVfayYfXwh55MeCFQ==");
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", $"{{\r\n    \"getHistory\":\"true\"\r\n}}", ParameterType.RequestBody);
+                IRestResponse response = await client.ExecuteAsync(request).ConfigureAwait(false);
+                var apidata = response.Content.Replace("\\", "").Replace("]\"", "]").Replace("\"[", "[");
+                var data = JsonConvert.DeserializeObject<List<PlantWateringDeatails>>(apidata);
+
+                items = data;
+                return items;
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return null;
+            }
+        }
+
+    }
 }

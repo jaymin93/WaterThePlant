@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using RestSharp;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -12,20 +15,19 @@ namespace WaterMyPlant.ViewModels
     {
         private PlantWateringDeatails _selectedItem;
 
+        List<PlantWateringDeatails> items;
+
         public ObservableCollection<PlantWateringDeatails> Items { get; }
         public Command LoadItemsCommand { get; }
-        public Command AddItemCommand { get; }
-        public Command<PlantWateringDeatails> ItemTapped { get; }
+      
+      
 
         public ItemsViewModel()
         {
-            Title = "Browse";
+            Title = "History";
             Items = new ObservableCollection<PlantWateringDeatails>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
 
-            ItemTapped = new Command<PlantWateringDeatails>(OnItemSelected);
-
-            AddItemCommand = new Command(OnAddItem);
         }
 
         async Task ExecuteLoadItemsCommand()
@@ -35,15 +37,15 @@ namespace WaterMyPlant.ViewModels
             try
             {
                 Items.Clear();
-                var items = await DataStore.GetItemsAsync(true);
-                if (items!= null)
+                items = await GetHistoryAsync().ConfigureAwait(false);
+                if (items != null)
                 {
                     foreach (var item in items)
                     {
                         Items.Add(item);
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -52,6 +54,33 @@ namespace WaterMyPlant.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+
+
+        private async Task<List<PlantWateringDeatails>> GetHistoryAsync()
+        {
+            try
+            {
+                var client = new RestClient("https://watertheplant20210313151300.azurewebsites.net/api/WaterThePlant");
+                client.Timeout = -1;
+                var request = new RestRequest(Method.POST);
+                request.AddHeader("x-functions-key", "7p3M8YQCp1KyyaGiWDPO9TtrjQQrabuC7ZIvXiVfayYfXwh55MeCFQ==");
+                request.AddHeader("Content-Type", "application/json");
+                request.AddParameter("application/json", $"{{\r\n    \"getHistory\":\"true\"\r\n}}", ParameterType.RequestBody);
+                IRestResponse response = await client.ExecuteAsync(request).ConfigureAwait(false);
+                var apidata = response.Content.Replace("\\", "").Replace("]\"", "]").Replace("\"[", "[");
+                var data = JsonConvert.DeserializeObject<List<PlantWateringDeatails>>(apidata);
+
+                items = data;
+                return items;
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return null;
             }
         }
 

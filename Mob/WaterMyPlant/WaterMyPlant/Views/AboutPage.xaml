@@ -5,11 +5,11 @@
              xmlns:forms="clr-namespace:Microcharts.Forms;assembly=Microcharts.Forms"
              xmlns:vm="clr-namespace:WaterMyPlant.ViewModels"
              Title="{Binding Title}">
-    
+
     <ContentPage.BindingContext>
         <vm:AboutViewModel />
     </ContentPage.BindingContext>
-    
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <Color x:Key="Accent">#96d1ff</Color>
@@ -23,12 +23,17 @@
         </Grid.RowDefinitions>
         <StackLayout BackgroundColor="{StaticResource Accent}" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
             <StackLayout Orientation="Horizontal" Padding="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-               
-                    <Label Text="Watering Status" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
+
+                <Label Text="Watering Status" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
 
                 <Label Text="{Binding CurrentMotorState}" HorizontalOptions="FillAndExpand"  VerticalOptions="FillAndExpand" FontAttributes="Bold"  ></Label>
 
-               
+
+                <Label Text="Moisture Level" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
+
+                <Label Text="{Binding CurrentMoisturelevel}" HorizontalOptions="FillAndExpand"  VerticalOptions="FillAndExpand" FontAttributes="Bold"  ></Label>
+
+
             </StackLayout>
         </StackLayout>
         <ScrollView Grid.Row="1">
@@ -49,7 +54,7 @@
                         TextColor="White"  HorizontalOptions="FillAndExpand"></Button>
 
                 </StackLayout>
-                <forms:ChartView x:Name="MyLineChart"  HeightRequest="125" />
+                <forms:ChartView x:Name="MyLineChart" Chart="{Binding lineChart}"  HeightRequest="125" />
             </StackLayout>
         </ScrollView>
     </Grid>
