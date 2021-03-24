@@ -12,4 +12,17 @@
     <!--<PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />  
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />-->
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\HistoryPage.xaml.cs">
+      <DependentUpon>HistoryPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MyPlantPage.xaml.cs">
+      <DependentUpon>MyPlantPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

@@ -18,20 +18,23 @@ namespace WaterThePlant
 {
     public static class WaterThePlant
     {
-        public const string StartMotor = "StartMotor";
+        public const string MOTOR_ON = "MOTOR_ON";
 
-        public const string StopMotor = "StopMotor";
+        public const string MOTOR_OFF = "MOTOR_OFF";
 
-        public const string IdleMotor = "IdleMotor";
+
 
         public const string waterdetails = "waterdetails";
-        public static int UpperBoundmoisturelevel { get; set; } = 80;
 
-        public static int LowerBoundmoisturelevel { get; set; } = 20;
 
-        public static bool AutoMode;
+        public static bool AutoMode = true;
 
-        public const string seprator = "##";
+        public static string Manual = "Manual";
+
+        public static string Auto = "Auto";
+
+
+        public const string seprator = "#";
 
         private const string TableName = "PlantWateringDeatails";
 
@@ -39,26 +42,64 @@ namespace WaterThePlant
 
         public static int currentMoisturelevel { get; set; }
 
+
+        private static TimeZoneInfo INDIAN_ZONE = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+
+        
+  
         [FunctionName("WaterThePlant")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
 
-            int moisturelevel;
+            GETRequestData getdata = new GETRequestData();
 
-            string content = await new StreamReader(req.Body).ReadToEndAsync();
-
-            PostRequestData postdata = JsonConvert.DeserializeObject<PostRequestData>(content);
-
-
-            if (postdata.getconfig)
+            if (int.TryParse(req.Query["moisturelevel"], out int mstlvl))
             {
+                getdata.moisturelevel = mstlvl;
+
+            }
+
+            if (bool.TryParse(req.Query["automode"], out bool atmd))
+            {
+                getdata.automode = atmd;
+                AutoMode = atmd;
+            }
+
+            if (bool.TryParse(req.Query["getconfig"], out bool gtcnfg))
+            {
+                getdata.getconfig = gtcnfg;
+            }
+
+            if (bool.TryParse(req.Query["getHistory"], out bool gthty))
+            {
+                getdata.getHistory = gthty;
+            }
+
+            if (bool.TryParse(req.Query["reportMoistureLevel"], out bool rptmstlvl))
+            {
+                getdata.reportMoistureLevel = rptmstlvl;
+            }
+
+            if (int.TryParse(req.Query["motorstate"], out int mtrstt))
+            {
+                getdata.motorstate = mtrstt;
+            }
+
+
+
+
+
+            if (getdata.getconfig)
+            {
+
                 List<PlantWateringDeatails> wateringdetailsfortheday = await GetPlantWateringDeatailsAsync();
 
                 return new OkObjectResult($"{CurrentMotorState}{seprator}{AutoMode}{seprator}{currentMoisturelevel}{seprator}{JsonConvert.SerializeObject(wateringdetailsfortheday)}");
+
             }
-            else if (postdata.getHistory)
+            else if (getdata.getHistory)
             {
                 List<PlantWateringDeatails> wateringdetailsfortheday = await GetPlantWateringDeatailsAsync();
 
@@ -66,111 +107,62 @@ namespace WaterThePlant
             }
             else
             {
-                if (!bool.TryParse(postdata.automode.ToString(), out AutoMode))
+
+
+
+                if (getdata.moisturelevel != 0)
                 {
-                    log.LogError($"Invalid argument for Automode {postdata.automode}");
+                    currentMoisturelevel = getdata.moisturelevel;
+
                 }
+
+
+                switch (getdata.motorstate)
+                {
+                    case 0:
+                        CurrentMotorState = MOTOR_OFF;
+                        break;
+
+                    case 1:
+                        CurrentMotorState = MOTOR_ON;
+                        break;
+                }
+
+
+
 
                 if (AutoMode)
                 {
-                    if (!string.IsNullOrEmpty(postdata.moisturelevel))
+                    if (getdata.reportMoistureLevel)
                     {
-                        if (int.TryParse(postdata.moisturelevel, out moisturelevel))
-                        {
-                            currentMoisturelevel = moisturelevel;
+                        await InsertWateringDeatilsTOAzureTable(currentMoisturelevel, $"{CurrentMotorState} due to moisture level is  {currentMoisturelevel}", log, true);
 
-                            if (moisturelevel <= LowerBoundmoisturelevel)
-                            {
-                                if (postdata.reportMoistureLevel)
-                                {
-                                    await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Started Motor to Plant water due to current moisture level is {moisturelevel}", log, true);
-
-                                }
-                                else
-                                {
-                                    await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Started Motor to Plant water due to current moisture level is {moisturelevel}", log);
-                                }
-
-
-                                CurrentMotorState = StartMotor;
-
-                                return new OkObjectResult($"{StartMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
-                            }
-                            else if (moisturelevel >= UpperBoundmoisturelevel)
-                            {
-
-                                if (postdata.reportMoistureLevel)
-                                {
-                                    await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Stopped Motor to Plant water due to current moisture level is {moisturelevel}", log, true);
-
-                                }
-                                else
-                                {
-                                    await InsertWateringDeatilsTOAzureTable(moisturelevel, $"Stopped Motor to Plant water due to current moisture level is {moisturelevel}", log);
-
-                                }
-
-
-                                CurrentMotorState = StopMotor;
-
-
-                                return new OkObjectResult($"{StopMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
-                            }
-                            else
-                            {
-                                CurrentMotorState = IdleMotor;
-
-                                return new OkObjectResult($"{IdleMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
-                            }
-                        }
-                        else
-                        {
-                            return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
-                        }
                     }
                     else
                     {
-                        return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
+                        await InsertWateringDeatilsTOAzureTable(currentMoisturelevel, $"{CurrentMotorState} due to moisture level is {currentMoisturelevel}", log);
                     }
+
+
+
+                    return new OkObjectResult($"{Auto}{seprator}{CurrentMotorState}{seprator}{currentMoisturelevel}");
+
+
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(postdata.motorstate))
+
+                    if (getdata.reportMoistureLevel)
                     {
-                        if (!int.TryParse(postdata.moisturelevel, out moisturelevel))
-                        {
-                            log.LogError($"unable to parse moisturelevel{postdata.moisturelevel}");
-                        }
-
-                        currentMoisturelevel = moisturelevel;
-
-                        switch (postdata.motorstate)
-                        {
-                            case StartMotor:
-                                CurrentMotorState = StartMotor;
-
-                                return new OkObjectResult($"{StartMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
-
-                            case StopMotor:
-                                CurrentMotorState = StopMotor;
-
-                                return new OkObjectResult($"{StopMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
-
-                            case IdleMotor:
-                                CurrentMotorState = IdleMotor;
-
-                                return new OkObjectResult($"{IdleMotor}{seprator}{AutoMode}{seprator}{currentMoisturelevel}");
-
-                            default:
-                                return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
-
-                        }
+                        await InsertWateringDeatilsTOAzureTable(currentMoisturelevel, $"{CurrentMotorState} due to moisture level is {currentMoisturelevel}", log, true);
 
                     }
                     else
                     {
-                        return new BadRequestObjectResult("Error : Invalid moisture level argument.please provide correct value for the moisture leval");
+                        await InsertWateringDeatilsTOAzureTable(currentMoisturelevel, $"{CurrentMotorState} due to moisture level is {currentMoisturelevel}", log);
                     }
+
+                    return new OkObjectResult($"{Manual}{seprator}{CurrentMotorState}{seprator}{currentMoisturelevel}");
                 }
 
             }
@@ -195,19 +187,16 @@ namespace WaterThePlant
 
                 if (ReportMoistureLevel)
                 {
-                    details = new PlantWateringDeatails($"waterdetails{DateTime.Now:dd-MM-yyyy}", $"myplant{waterdetails}{moisturelevel}");
+                    details = new PlantWateringDeatails($"waterdetails{DateTime.Now:dd-MM-yyyy}", $"myplant{DateTime.Now:dd-MM-yyyy-HH-mm-ss}");
                 }
                 else
                 {
-                    details = new PlantWateringDeatails(waterdetails, $"myplant{waterdetails}{moisturelevel}");
+                    details = new PlantWateringDeatails(waterdetails, $"myplant{DateTime.Now:dd-MM-yyyy-HH-mm-ss}");
                 }
 
-                string currentdatetimeinddmmyy = DateTime.Now.ToString("dd-MM-yyyy-HH");
+                details.PlantingeTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE);
 
-                if (DateTime.TryParseExact(currentdatetimeinddmmyy, "dd-MM-yyyy-HH", null, System.Globalization.DateTimeStyles.None, out DateTime parseddate))
-                {
-                    details.PlantingeTime = parseddate;
-                }
+
 
                 details.Message = message;
                 details.MoisuteLevel = moisturelevel;
@@ -280,7 +269,8 @@ namespace WaterThePlant
             }
             catch (Exception exp)
             {
-                return null;
+                Debug.Write(exp);
+                return default;
             }
         }
 

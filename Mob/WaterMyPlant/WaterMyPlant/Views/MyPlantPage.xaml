@@ -1,18 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="WaterMyPlant.Views.AboutPage"
+             x:Class="WaterMyPlant.Views.MyPlantPage"
              xmlns:forms="clr-namespace:Microcharts.Forms;assembly=Microcharts.Forms"
              xmlns:vm="clr-namespace:WaterMyPlant.ViewModels"
-             Title="{Binding Title}">
+             Title="{Binding Title}" >
 
     <ContentPage.BindingContext>
-        <vm:AboutViewModel />
+        <vm:MyPlantPageViewModel />
     </ContentPage.BindingContext>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Reload" Command="{Binding ReloadCommand}" />
+    </ContentPage.ToolbarItems>
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <Color x:Key="Accent">#96d1ff</Color>
+            <Color x:Key="Accent">#66c1ac</Color>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -24,7 +28,7 @@
         <StackLayout BackgroundColor="{StaticResource Accent}" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
             <StackLayout Orientation="Horizontal" Padding="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
 
-                <Label Text="Watering Status" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
+                <Label Text="Motor Status" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"></Label>
 
                 <Label Text="{Binding CurrentMotorState}" HorizontalOptions="FillAndExpand"  VerticalOptions="FillAndExpand" FontAttributes="Bold"  ></Label>
 
@@ -40,21 +44,21 @@
             <StackLayout Orientation="Vertical" Padding="10" Spacing="10">
 
                 <Label Text="Auto Watering Mode" HorizontalOptions="FillAndExpand"></Label>
-                <Switch   IsToggled="{Binding Automodeenabled}" />
-                <StackLayout IsVisible="true" Orientation="Horizontal">
-
-                    <Button Text="StartMotor" x:Name="btnsave" 
+                <Switch    IsToggled="{Binding Automodeenabled}" />
+                <StackLayout IsVisible="{Binding ShowManualMode}" Orientation="Horizontal">
+                    
+                    <Button Text="Start Motor" x:Name="btnsave" 
                         Command="{Binding StartMotorCommand}"
                         BackgroundColor="{StaticResource Accent}"
                         TextColor="White"  HorizontalOptions="FillAndExpand"></Button>
 
-                    <Button Text="StopMotor" x:Name="StopMotor" 
+                    <Button Text="Stop Motor" x:Name="StopMotor" 
                         Command="{Binding StopMotorCommand}"
                         BackgroundColor="{StaticResource Accent}" 
                         TextColor="White"  HorizontalOptions="FillAndExpand"></Button>
 
                 </StackLayout>
-                <forms:ChartView x:Name="MyLineChart" Chart="{Binding lineChart}"  HeightRequest="125" />
+                <forms:ChartView x:Name="MyLineChart"   Chart="{Binding lineChart}"  HeightRequest="250" />
             </StackLayout>
         </ScrollView>
     </Grid>

@@ -12,15 +12,15 @@ using Xamarin.Forms.Xaml;
 
 namespace WaterMyPlant.Views
 {
-    public partial class ItemsPage : ContentPage
+    public partial class HistoryPage : ContentPage
     {
-        ItemsViewModel _viewModel;
+        HistoryViewModel _viewModel;
 
-        public ItemsPage()
+        public HistoryPage()
         {
             InitializeComponent();
 
-            BindingContext = _viewModel = new ItemsViewModel();
+            BindingContext = _viewModel = new HistoryViewModel();
         }
 
         protected override void OnAppearing()

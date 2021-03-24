@@ -11,9 +11,9 @@ using Xamarin.Forms;
 
 namespace WaterMyPlant.ViewModels
 {
-    public class ItemsViewModel : BaseViewModel
+    public class HistoryViewModel : BaseViewModel
     {
-        private PlantWateringDeatails _selectedItem;
+        
 
         List<PlantWateringDeatails> items;
 
@@ -22,7 +22,7 @@ namespace WaterMyPlant.ViewModels
       
       
 
-        public ItemsViewModel()
+        public HistoryViewModel()
         {
             Title = "History";
             Items = new ObservableCollection<PlantWateringDeatails>();
@@ -63,13 +63,10 @@ namespace WaterMyPlant.ViewModels
         {
             try
             {
-                var client = new RestClient("https://watertheplant20210313151300.azurewebsites.net/api/WaterThePlant");
+                var client = new RestClient($"{MyPlantPageViewModel.functionurl}&gethistory=true");
                 client.Timeout = -1;
-                var request = new RestRequest(Method.POST);
-                request.AddHeader("x-functions-key", "7p3M8YQCp1KyyaGiWDPO9TtrjQQrabuC7ZIvXiVfayYfXwh55MeCFQ==");
-                request.AddHeader("Content-Type", "application/json");
-                request.AddParameter("application/json", $"{{\r\n    \"getHistory\":\"true\"\r\n}}", ParameterType.RequestBody);
-                IRestResponse response = await client.ExecuteAsync(request).ConfigureAwait(false);
+                var request = new RestRequest(Method.GET);
+                IRestResponse response = await client.ExecuteAsync(request);
                 var apidata = response.Content.Replace("\\", "").Replace("]\"", "]").Replace("\"[", "[");
                 var data = JsonConvert.DeserializeObject<List<PlantWateringDeatails>>(apidata);
 
@@ -87,31 +84,8 @@ namespace WaterMyPlant.ViewModels
         public void OnAppearing()
         {
             IsBusy = true;
-            SelectedItem = null;
+           
         }
 
-        public PlantWateringDeatails SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                SetProperty(ref _selectedItem, value);
-                OnItemSelected(value);
-            }
-        }
-
-        private async void OnAddItem(object obj)
-        {
-            await Shell.Current.GoToAsync(nameof(NewItemPage));
-        }
-
-        async void OnItemSelected(PlantWateringDeatails item)
-        {
-            if (item == null)
-                return;
-
-            // This will push the ItemDetailPage onto the navigation stack
-            await Shell.Current.GoToAsync($"{nameof(ItemDetailPage)}?{nameof(ItemDetailViewModel.MoisuteLevel)}={item.MoisuteLevel}");
-        }
     }
 }

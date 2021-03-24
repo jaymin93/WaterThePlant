@@ -1,12 +1,12 @@
 ﻿namespace WaterThePlant
 {
-    public class PostRequestData
+    public class GETRequestData
     {
-        public string? moisturelevel { get; set; }
+        public int moisturelevel { get; set; }
 
-        public bool? automode { get; set; }
+        public bool automode { get; set; } = true;
 
-        public string? motorstate { get; set; }
+        public int motorstate { get; set; }
 
         public bool getconfig { get; set; }
 

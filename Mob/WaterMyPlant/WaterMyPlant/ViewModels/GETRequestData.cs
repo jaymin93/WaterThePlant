@@ -1,6 +1,6 @@
 ﻿namespace WaterMyPlant.ViewModels
 {
-    public class PostRequestData
+    public class GETRequestData
     {
         public string moisturelevel { get; set; }
 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31105.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterThePlant", "WaterThePlant\WaterThePlant.csproj", "{484FAA61-D936-4123-96B3-312E3AC57E79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaterThePlant", "WaterThePlant\WaterThePlant.csproj", "{484FAA61-D936-4123-96B3-312E3AC57E79}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterMyPlant.UWP", "Mob\WaterMyPlant\WaterMyPlant.UWP\WaterMyPlant.UWP.csproj", "{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}"
 EndProject
@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterMyPlant.Android", "Mob
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterMyPlant.iOS", "Mob\WaterMyPlant\WaterMyPlant.iOS\WaterMyPlant.iOS.csproj", "{98DB18E9-F4DE-4F1F-8522-40FEAE9ECADA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterMyPlant", "Mob\WaterMyPlant\WaterMyPlant\WaterMyPlant.csproj", "{6B6574AA-1C54-47AE-B10E-840960930D2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WaterMyPlant", "Mob\WaterMyPlant\WaterMyPlant\WaterMyPlant.csproj", "{6B6574AA-1C54-47AE-B10E-840960930D2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +60,8 @@ Global
 		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|ARM.Build.0 = Debug|ARM
 		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|ARM.Deploy.0 = Debug|ARM
 		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|iPhone.ActiveCfg = Debug|x86
+		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|iPhone.Build.0 = Debug|x86
+		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|iPhone.Deploy.0 = Debug|x86
 		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|iPhoneSimulator.ActiveCfg = Debug|x86
 		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|x64.ActiveCfg = Debug|x64
 		{0726A8AA-FA7F-4BF5-8B1B-E6E4BCBAC9CB}.Debug|x64.Build.0 = Debug|x64
